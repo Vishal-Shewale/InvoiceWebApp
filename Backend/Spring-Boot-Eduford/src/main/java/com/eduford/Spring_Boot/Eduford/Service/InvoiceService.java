@@ -4,6 +4,7 @@ import com.eduford.Spring_Boot.Eduford.Entity.Invoice;
 import com.eduford.Spring_Boot.Eduford.Repository.InvoiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -44,14 +45,28 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
+//      Error in these code these is generated for the parsing the values to the frontend. Auto suggestin (Under working)
+//    public List<Invoice> searchBuyers(String searchTerm) {
+//        List<Invoice> buyers = invoiceRepository.findByNameContainingIgnoreCase(searchTerm);
+//        return buyers.stream()
+//                .map(this::convertToDTO)
+//                .collect(Collectors.toList());
+//    }
+//    private Invoice convertToDTO(Invoice buyer) {
+//        return new Invoice(
+//                buyer.getBuyerName(),
+//                buyer.getBuyerAddress(),
+//                buyer.getBuyerGSTIN()
+//        );
 
-    public Invoice getInvoiceById(Long id) {
-        return invoiceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Invoice not found"));
-    }
+
 
 
     public void deleteInvoice(Long id) {
-        invoiceRepository.deleteById(id);
+        if (invoiceRepository.existsById(id)) {
+            invoiceRepository.deleteById(id);
+        } else {
+            throw new RuntimeException("Invoice not found with id: " + id);
+        }
     }
 }

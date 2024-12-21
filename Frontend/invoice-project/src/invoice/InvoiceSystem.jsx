@@ -1,8 +1,14 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { XCircle, Plus, Save, FileText } from 'lucide-react';
-
 const InvoiceSystem = () => {
   const [invoices, setInvoices] = useState([]);
+  
+  // Bellow two field is for the buyer suggestions (Under working)
+  
+  const [buyerSuggestions, setBuyerSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   const [currentInvoice, setCurrentInvoice] = useState({
     invoiceNo: '',
     date: new Date().toISOString().split('T')[0],
@@ -27,11 +33,9 @@ const InvoiceSystem = () => {
     swiftCode: ''
   });
   const [successMessage, setSuccessMessage] = useState('');
-
   useEffect(() => {
     fetchInvoices();
   }, []);
-
   const fetchInvoices = async () => {
     try {
       const response = await fetch('http://localhost:8080/api/invoices/createInvoice');
@@ -41,6 +45,41 @@ const InvoiceSystem = () => {
       console.error('Error fetching invoices:', error);
     }
   };
+
+    // New function to fetch buyer suggestions (UnderWorking)
+    const fetchBuyerSuggestions = async (searchTerm) => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/buyers/search?term=${searchTerm}`);
+        const data = await response.json();
+        setBuyerSuggestions(data);
+        setShowSuggestions(true);
+      } catch (error) {
+        console.error('Error fetching buyer suggestions:', error);
+      }
+    };
+
+    // Handle buyer name input change (UnderWorking)
+    const handleBuyerNameChange = (e) => {
+      const value = e.target.value;
+      setCurrentInvoice({ ...currentInvoice, buyerName: value });
+      if (value.length >= 2) {
+        fetchBuyerSuggestions(value);
+      } else {
+        setBuyerSuggestions([]);
+        setShowSuggestions(false);
+      }
+    };
+
+    // Handle buyer selection from suggestions (UnderWorking)
+    const handleBuyerSelect = (buyer) => {
+      setCurrentInvoice({
+        ...currentInvoice,
+        buyerName: buyer.name,
+        buyerAddress: buyer.address,
+        buyerGSTIN: buyer.gstin
+      });
+      setShowSuggestions(false);
+    };
 
   const handleAddItem = () => {
     setCurrentInvoice({
@@ -58,12 +97,10 @@ const InvoiceSystem = () => {
       ]
     });
   };
-
   const handleRemoveItem = (index) => {
     const newItems = currentInvoice.items.filter((_, i) => i !== index);
     setCurrentInvoice({ ...currentInvoice, items: newItems });
   };
-
   const handleItemChange = (index, field, value) => {
     const newItems = [...currentInvoice.items];
     newItems[index] = { ...newItems[index], [field]: value };
@@ -74,7 +111,6 @@ const InvoiceSystem = () => {
     
     setCurrentInvoice({ ...currentInvoice, items: newItems });
   };
-
   const calculateTotals = () => {
     const totalBeforeTax = currentInvoice.items.reduce((sum, item) => sum + item.amount, 0);
     const cgstAmount = totalBeforeTax * (currentInvoice.cgstRate / 100);
@@ -83,7 +119,6 @@ const InvoiceSystem = () => {
     
     return { totalBeforeTax, cgstAmount, sgstAmount, totalAmount };
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -113,26 +148,22 @@ const InvoiceSystem = () => {
       console.error('Error creating invoice:', error);
     }
   };
-
   const totals = calculateTotals();
-
   return (
     <div className="min-h-screen bg-white p-1">
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Generate Invoice</h1>
         </div>
-
         {successMessage && (
           <div className="bg-green-100 text-green-800 p-4 mb-6 rounded">
             {successMessage}
           </div>
         )}
-
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-2xl p-6 mb-6">
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <label className="block text-sm font-medium mb-1">Invoice No</label>
+              <label className="block text-sm font-medium mb-1">Invoice Code</label>
               <input
                 type="text"
                 value={currentInvoice.invoiceNo}
@@ -152,9 +183,8 @@ const InvoiceSystem = () => {
               />
             </div>
           </div>
-
    
-          <div className="grid grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-2 gap-6 mb-9">
             <div className="border rounded p-4">
               <h3 className="font-medium mb-3">Supplier Details</h3>
               <div className="space-y-3">
@@ -183,58 +213,56 @@ const InvoiceSystem = () => {
                 />
               </div>
             </div>
+            <div className="border rounded p-4 relative">
+        <h3 className="font-medium mb-3">Buyer Details</h3>
+        <div className="space-y-3">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buyer Name"
+              value={currentInvoice.buyerName}
+              onChange={handleBuyerNameChange}
+              className="w-full border rounded p-2"
+              required
+            />
 
-            <div className="border rounded p-4">
-              <h3 className="font-medium mb-3">Buyer Details</h3>
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Buyer Name"
-                  value={currentInvoice.buyerName}
-                  onChange={(e) => setCurrentInvoice({ ...currentInvoice, buyerName: e.target.value })}
-                  className="w-full border rounded p-2"
-                  required
-                />
-                <textarea
-                  placeholder="Buyer Address"
-                  value={currentInvoice.buyerAddress}
-                  onChange={(e) => setCurrentInvoice({ ...currentInvoice, buyerAddress: e.target.value })}
-                  className="w-full border rounded p-2"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="GSTIN"
-                  value={currentInvoice.buyerGSTIN}
-                  onChange={(e) => setCurrentInvoice({ ...currentInvoice, buyerGSTIN: e.target.value })}
-                  className="w-full border rounded p-2"
-                  required
-                />
-              </div>
-            </div>
-            <div className="border rounded p-4">
-              <h3 className="font-medium mb-3">Payment Details</h3>
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Payment Status"
-                  value={currentInvoice.paymentTerms}
-                  onChange={(e) => setCurrentInvoice({ ...currentInvoice, paymentTerms: e.target.value })}
-                  className="w-full border rounded p-2"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Payment Mode"
-                  value={currentInvoice.paymentMode}
-                  onChange={(e) => setCurrentInvoice({ ...currentInvoice, paymentMode: e.target.value })}
-                  className="w-full border rounded p-2"
-                  required
-                />
-              </div>
-            </div>
+            {/* for the buyer available suggestions */}
+
+              {showSuggestions && buyerSuggestions.length > 0 && (
+                <div className="absolute z-10 w-full bg-white border rounded-md shadow-lg mt-1">
+                  {buyerSuggestions.map((buyer, index) => (
+                    <div
+                      key={index}
+                      className="p-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleBuyerSelect(buyer)}
+                    >
+                      <div className="font-medium">{buyer.name}</div>
+                      <div className="text-sm text-gray-600">{buyer.address}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+
           </div>
-
+          <textarea
+            placeholder="Buyer Address"
+            value={currentInvoice.buyerAddress}
+            onChange={(e) => setCurrentInvoice({ ...currentInvoice, buyerAddress: e.target.value })}
+            className="w-full border rounded p-2"
+            required
+          />
+          <input
+            type="text"
+            placeholder="GSTIN"
+            value={currentInvoice.buyerGSTIN}
+            onChange={(e) => setCurrentInvoice({ ...currentInvoice, buyerGSTIN: e.target.value })}
+            className="w-full border rounded p-2"
+            required
+          />
+        </div>
+      </div>
+          </div>
           <div className="mb-6">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-medium">Items</h3>
@@ -311,7 +339,6 @@ const InvoiceSystem = () => {
                 </tbody>
               </table>
             </div>
-
             <div className="mt-4 border-t pt-4">
               <div className="flex justify-end">
                 <div className="w-64 space-y-2">
@@ -335,7 +362,6 @@ const InvoiceSystem = () => {
               </div>
             </div>
           </div>
-
           <div className="flex justify-end">
             <button
               type="submit"
@@ -350,5 +376,4 @@ const InvoiceSystem = () => {
     </div>
   );
 };
-
 export default InvoiceSystem;
