@@ -5,7 +5,7 @@ import InvoiceSystem from './InvoiceSystem'
 const group = () => {
   return (
     <div>
-     
+       {/* These is not used at all */}
     </div>
   )
 }

@@ -45,7 +45,7 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
-//      Error in these code these is generated for the parsing the values to the frontend. Auto suggestin (Under working)
+//     Auto suggestion code
 //    public List<Invoice> searchBuyers(String searchTerm) {
 //        List<Invoice> buyers = invoiceRepository.findByNameContainingIgnoreCase(searchTerm);
 //        return buyers.stream()

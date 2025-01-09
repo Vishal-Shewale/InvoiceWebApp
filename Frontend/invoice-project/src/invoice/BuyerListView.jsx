@@ -81,14 +81,15 @@ const BuyerListView = () => {
     }
   };
 
+
   const InvoiceDetails = ({ invoice }) => {
     const handlePrint = () => {
       window.print();
     };
 
-    const numberToWords = (num) => {
-      return `Rupees ${num} Only`;
-    };
+      const numberToWords = (num) => {
+        return `Rupees ${num} Only`;
+      };
 
     return (
       <div className="p-1 bg-white print:p-1 font-light">
@@ -103,7 +104,7 @@ const BuyerListView = () => {
         </div>
 
         <div className="grid grid-cols-2 gap-4 my-4 text-sm">
-          <div className="grid grid-cols-3">
+          <div className="grid grid-cols-3">  
             <p className="font-semibold">Invoice No</p>
             <p className="col-span-2">{invoice.id}</p>
             <p className="font-semibold">Suppliers Ref</p>
@@ -167,7 +168,7 @@ const BuyerListView = () => {
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="text-sm">
-            <p className="font-semibold mb-2">Amount Chargeable (in words):</p>
+            <p className="font-semibold mb-2">Amount Chargeable :</p>
             <p>{numberToWords(calculateTotal(invoice))}</p>
           </div>
           <div className="space-y-2 text-sm">
@@ -272,11 +273,11 @@ const BuyerListView = () => {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="p-4 text-left font-small">Invoice No</th>
-                    <th className="p-4 text-left font-small">Date</th>
-                    <th className="p-4 text-left font-small">Buyer Name</th>
-                    <th className="p-4 text-left font-small">Address</th>
-                    <th className="p-4 text-right font-small">Total Amount</th>
+                    <th className="p-4 text-center font-small">Invoice No</th>
+                    <th className="p-4 text-center font-small">Date</th>
+                    <th className="p-4 text-center font-small">Buyer Name</th>
+                    <th className="p-4 text-center font-small">Address</th>
+                    <th className="p-4 text-center font-small">Total Amount</th>
                     <th className="p-4 text-center font-small">Actions</th>
                   </tr>
                 </thead>
